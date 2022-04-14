@@ -6,6 +6,7 @@ use App\Models\Mahasiswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Kelas;
+use App\Models\Mahasiswa_MataKuliah;
 
 class MahasiswaController extends Controller
 {
@@ -131,7 +132,7 @@ class MahasiswaController extends Controller
         $val = $request->input('search');
         $values = Mahasiswa::where('nim', 'LIKE', "%{$val}%")
                 ->orWhere('nama', 'LIKE', "%{$val}%")
-                ->orWhere('kelas', 'LIKE', "%{$val}%")
+                // ->orWhere('id_kelas', 'LIKE', "%{$val}%")
                 ->orWhere('jurusan', 'LIKE', "%{$val}%")
                 ->orWhere('jenis_kelamin', 'LIKE', "%{$val}%")
                 ->orWhere('email', 'LIKE', "%{$val}%")
@@ -139,5 +140,14 @@ class MahasiswaController extends Controller
                 ->orWhere('tanggal_lahir', 'LIKE', "%{$val}%")
                 ->paginate(5);
         return view('mahasiswa.index', ['mahasiswa' => $values]);
+    }
+
+    public function nilai($id) {
+        $nilai = Mahasiswa_MataKuliah::where('mahasiswa_id', $id)
+            ->with('matakuliah')->get();
+        $nilai->mahasiswa = Mahasiswa::with('kelas')
+            ->where('id_mahasiswa', $id)->first();
+
+        return view('mahasiswa.nilai', compact('nilai'));
     }
 };
