@@ -32,7 +32,7 @@
         <th>Jurusan</th>
         <th width="280px">Action</th>
     </tr>
-@foreach ($mahasiswa as $mhs)
+    @foreach ($mahasiswa as $mhs)
     <tr>
         <td>{{ $mhs->nim }}</td>
         <td>{{ $mhs->nama }}</td>
