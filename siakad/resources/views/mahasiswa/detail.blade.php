@@ -7,6 +7,7 @@
                 Detail Mahasiswa
             </div>
             <div class="card-body">
+                <img width="100px" class="rounded mx-auto d-block" src="{{ $Mahasiswa->image==''? asset('/storage/images/default.png'): asset('/storage/' . $Mahasiswa->image) }}">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item"><b>Nim: </b>{{$Mahasiswa->nim}}</li>
                     <li class="list-group-item"><b>Nama: </b>{{$Mahasiswa->nama}}</li>
