@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Kelas;
 use App\Models\Mahasiswa_MataKuliah;
+use Illuminate\Support\Facades\Storage;
+use PDF;
 
 class MahasiswaController extends Controller
 {
@@ -38,9 +40,13 @@ class MahasiswaController extends Controller
             'Jenis_Kelamin' => 'required',
             'Email' => 'required',
             'Alamat' => 'required',
-            'Tanggal_Lahir' => 'required'
+            'Tanggal_Lahir' => 'required',
         ]);
 
+        $image_name = '';
+        if ($request->file('Image')) {
+            $image_name = $request->file('Image')->store('images', 'public');
+        }
         $mahasiswa = new Mahasiswa;
         $mahasiswa->nim = $request->get('Nim');
         $mahasiswa->nama = $request->get('Nama');
@@ -49,6 +55,7 @@ class MahasiswaController extends Controller
         $mahasiswa->email = $request->get('Email');
         $mahasiswa->alamat = $request->get('Alamat');
         $mahasiswa->tanggal_lahir = $request->get('Tanggal_Lahir');
+        $mahasiswa->image = $image_name;
 
         $kelas = new Kelas;
         $kelas->id = $request->get('Kelas');
@@ -86,10 +93,14 @@ class MahasiswaController extends Controller
             'Jenis_Kelamin' => 'required',
             'Email' => 'required',
             'Alamat' => 'required',
-            'Tanggal_Lahir' => 'required'
+            'Tanggal_Lahir' => 'required',
         ]);
 
         $mahasiswa = Mahasiswa::with('kelas')->where('nim', $nim)->first();
+        if ($mahasiswa->image && file_exists(storage_path('app/public/' . $mahasiswa->image))) {
+            Storage::delete('public/' . $mahasiswa->image);
+        }
+        $image_name = $request->file('Image')->store('images', 'public');
         $mahasiswa->nim = $request->get('Nim');
         $mahasiswa->nama = $request->get('Nama');
         $mahasiswa->jurusan = $request->get('Jurusan');
@@ -97,6 +108,7 @@ class MahasiswaController extends Controller
         $mahasiswa->email = $request->get('Email');
         $mahasiswa->alamat = $request->get('Alamat');
         $mahasiswa->tanggal_lahir = $request->get('Tanggal_Lahir');
+        $mahasiswa->image = $image_name;
         $mahasiswa->save();
 
         $kelas = new Kelas;
@@ -149,5 +161,14 @@ class MahasiswaController extends Controller
             ->where('id_mahasiswa', $id)->first();
 
         return view('mahasiswa.nilai', compact('nilai'));
+    }
+
+    public function cetak_pdf($id) {
+        $nilai = Mahasiswa_MataKuliah::where('mahasiswa_id', $id)
+            ->with('matakuliah')->get();
+        $nilai->mahasiswa = Mahasiswa::with('kelas')
+            ->where('id_mahasiswa', $id)->first();
+        $pdf = PDF::loadview('mahasiswa.mahasiswa_pdf', ['nilai'=>$nilai]);
+        return $pdf->stream();
     }
 };
